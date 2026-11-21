@@ -7,21 +7,27 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar código do repositório
         uses: actions/checkout@v4
 
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev automake build-essential ccache
+
+      - name: Instalar Buildozer
+        run: |
+          pip install --break-system-packages --upgrade pip
+          pip install --break-system-packages buildozer "cython<3.0" setuptools wheel
+
       - name: Compilar APK com Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: master
+        run: yes | buildozer android debug
 
       - name: Disponibilizar APK para download
         uses: actions/upload-artifact@v4
         with:
           name: meu-app-android
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
